@@ -1,0 +1,10 @@
+<resources>
+  <string name="app_name">AvitoTest</string>
+  <string name="api_rate_limit">API rate limit exceeded</string>
+  <string name="failed_to_connect">Couldn\'t establish connection to server</string>
+  <string name="error">Error</string>
+  <string name="nothing_found">Nothing found</string>
+  <string name="enter_search">Enter search sequence</string>
+  <string name="search">Search</string>
+
+</resources>
