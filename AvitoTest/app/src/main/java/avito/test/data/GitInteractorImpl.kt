@@ -45,12 +45,11 @@ public class GitInteractorImpl(private val context: Context) {
 
     public fun getErrorSubject(): Observable<Int> = errorSubject
 
-    public fun getUserSubject(): Observable<GitData> = userSubject.zipWith(repoSubject, object : Func2<List<User>, List<Repo>, GitData> {
-            override fun call(users: List<User>, repos: List<Repo>): GitData {
-                val data = GitData(users, repos);
-                return data
-            }
-        })
+    public fun getUserSubject(): Observable<GitData> = userSubject.zipWith(repoSubject,
+            { user, repo ->
+                val data = GitData(user, repo);
+                data
+            })
 
     private fun initSubject() {
         searchSubject.debounce(500, TimeUnit.MILLISECONDS)
