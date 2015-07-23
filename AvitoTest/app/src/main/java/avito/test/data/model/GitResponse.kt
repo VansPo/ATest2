@@ -1,8 +1,5 @@
 package avito.test.data.model
 
-public class GitResponse<T> {
+import java.util.*
 
-    public var totalCount: Int = 0
-    public var incompleteResults: Boolean = false
-    public var items: List<T>
-}
+data class GitResponse<T>(val totalCount : Int, val incompleteResults : Boolean, val items : List<T>)

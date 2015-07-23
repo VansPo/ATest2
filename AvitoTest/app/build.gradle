@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
 android {
   compileSdkVersion 22
@@ -17,6 +18,9 @@ android {
       proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
     }
   }
+  sourceSets {
+    main.java.srcDirs += 'src/main/java'
+  }
 }
 
 dependencies {
@@ -33,4 +37,17 @@ dependencies {
   compile 'com.squareup.okhttp:okhttp-urlconnection:2.4.0'
 
   compile 'com.squareup.picasso:picasso:2.5.2'
+  compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+}
+buildscript {
+  ext.kotlin_version = '0.12.1218'
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+  }
+}
+repositories {
+  mavenCentral()
 }

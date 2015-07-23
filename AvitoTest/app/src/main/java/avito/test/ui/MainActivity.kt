@@ -28,7 +28,7 @@ public class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener 
     private var list: RecyclerView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        super<AppCompatActivity>.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         messageText = findViewById(R.id.message) as TextView
@@ -53,7 +53,7 @@ public class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener 
     }
 
     public fun setData(data: GitData) {
-        if (data.getUserList().size() > 0 && data.getRepoList().size() > 0) adapter!!.replaceWith(data)
+        if (data.userList.size() > 0 && data.repoList.size() > 0) adapter!!.replaceWith(data)
         else showError(ConstUtil.NO_DATA)
     }
 

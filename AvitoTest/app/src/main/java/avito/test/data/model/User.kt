@@ -1,7 +1,3 @@
 package avito.test.data.model
 
-public class User {
-
-    public var login: String
-    public var avatar_url: String
-}
+data class User(var login : String = "", var avatar_url : String = "")

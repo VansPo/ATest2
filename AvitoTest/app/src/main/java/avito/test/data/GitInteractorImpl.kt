@@ -27,7 +27,12 @@ public class GitInteractorImpl(private val context: Context) {
     private val errorSubject: BehaviorSubject<Int>
 
     init {
-        val adapter = RestAdapter.Builder().setLogLevel(if (BuildConfig.DEBUG) RestAdapter.LogLevel.FULL else RestAdapter.LogLevel.NONE).setEndpoint(MyEndPoint(context.getResources().getString(R.string.git_url))).setClient(OkClient()).build()
+        val adapter = RestAdapter.Builder()
+                .setLogLevel(
+                    if (BuildConfig.DEBUG) RestAdapter.LogLevel.FULL
+                    else RestAdapter.LogLevel.NONE).setEndpoint(MyEndPoint(context.getResources().getString(R.string.git_url)))
+                .setClient(OkClient())
+                .build()
         service = adapter.create<RestService>(javaClass<RestService>())
 
         userSubject = BehaviorSubject.create<List<User>>()
@@ -38,73 +43,39 @@ public class GitInteractorImpl(private val context: Context) {
         initSubject()
     }
 
-    public fun getErrorSubject(): Observable<Int> {
-        return errorSubject
-    }
+    public fun getErrorSubject(): Observable<Int> = errorSubject
 
-    public fun getUserSubject(): Observable<GitData> {
-        return userSubject.zipWith(repoSubject, object : Func2<List<User>, List<Repo>, GitData> {
+    public fun getUserSubject(): Observable<GitData> = userSubject.zipWith(repoSubject, object : Func2<List<User>, List<Repo>, GitData> {
             override fun call(users: List<User>, repos: List<Repo>): GitData {
-                val data = GitData()
-                data.setUserList(users)
-                data.setRepoList(repos)
+                val data = GitData(users, repos);
                 return data
             }
         })
-    }
 
     private fun initSubject() {
-        searchSubject.debounce(500, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe(object : Subscriber<String>() {
-            override fun onCompleted() {
-            }
-
-            override fun onError(e: Throwable) {
-                handleError(e)
-            }
-
-            override fun onNext(s: String) {
-                searchRepos(s)
-                searchUsers(s)
-            }
-        })
+        searchSubject.debounce(500, TimeUnit.MILLISECONDS)
+            .subscribeOn(Schedulers.io())
+            .subscribe({s -> searchUsers(s); searchRepos(s)},
+                    {e -> handleError(e)})
     }
 
     private fun searchRepos(s: String) {
-        service.getRepos(s).subscribe(object : Subscriber<GitResponse<Repo>>() {
-            override fun onCompleted() {
-            }
-
-            override fun onError(e: Throwable) {
-                handleError(e)
-            }
-
-            override fun onNext(repoGitResponse: GitResponse<Repo>) {
-                repoSubject.onNext(repoGitResponse.items)
-            }
-        })
+        service.getRepos(s).subscribe({r -> repoSubject.onNext(r.items)},
+                {e -> handleError(e)})
     }
 
     private fun searchUsers(s: String) {
-        service.getUsers(s).subscribe(object : Subscriber<GitResponse<User>>() {
-            override fun onCompleted() {
-            }
-
-            override fun onError(e: Throwable) {
-                handleError(e)
-            }
-
-            override fun onNext(userGitResponse: GitResponse<User>) {
-                userSubject.onNext(userGitResponse.items)
-            }
-        })
+        service.getUsers(s).subscribe({r -> userSubject.onNext(r.items)},
+                {e -> handleError(e)})
     }
 
     private fun handleError(e: Throwable) {
-        if (e is RetrofitError) {
-            if (e.getResponse() != null) errorSubject.onNext(e.getResponse().getStatus())
-            else errorSubject.onNext(-2)
-        } else {
-            errorSubject.onNext(-1)
+        when(e) {
+            is RetrofitError -> {
+                if (e.getResponse() != null) errorSubject.onNext(e.getResponse().getStatus())
+                else errorSubject.onNext(-2)
+            }
+            else -> errorSubject.onNext(-1)
         }
     }
 
@@ -116,7 +87,7 @@ public class GitInteractorImpl(private val context: Context) {
 
         private var instance: GitInteractorImpl? = null
 
-        synchronized public fun getInstance(context: Context): GitInteractorImpl {
+        public fun getInstance(context: Context): GitInteractorImpl? {
             if (instance == null) {
                 instance = GitInteractorImpl(context)
             }

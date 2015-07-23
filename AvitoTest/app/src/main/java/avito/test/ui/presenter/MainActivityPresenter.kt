@@ -8,40 +8,28 @@ import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 
 public class MainActivityPresenter(private val view: MainActivity) {
-    private val interactor: GitInteractorImpl
+    private val interactor: GitInteractorImpl?
 
     init {
         interactor = GitInteractorImpl.getInstance(view)
     }
 
     public fun init() {
-        interactor.getUserSubject().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(object : Subscriber<GitData>() {
-            override fun onCompleted() {
-            }
+        interactor!!.getUserSubject()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({gitData ->
+                    view.setRefreshing(false)
+                    view.setData(gitData)
+                }, {e -> view.setRefreshing(false)})
 
-            override fun onError(e: Throwable) {
-                //TODO do smth
-                view.setRefreshing(false)
-            }
-
-            override fun onNext(gitData: GitData) {
-                view.setRefreshing(false)
-                view.setData(gitData)
-            }
-        })
-
-        interactor.getErrorSubject().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(object : Subscriber<Int>() {
-            override fun onCompleted() {
-            }
-
-            override fun onError(e: Throwable) {
-            }
-
-            override fun onNext(i: Int?) {
-                view.setRefreshing(false)
-                view.showError(i!!)
-            }
-        })
+        interactor!!.getErrorSubject()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({error ->
+                    view.setRefreshing(false)
+                    view.showError(error)
+                }, {e -> view.setRefreshing(false)})
 
     }
 
@@ -50,7 +38,7 @@ public class MainActivityPresenter(private val view: MainActivity) {
             view.clearList()
         } else {
             view.setRefreshing(true)
-            interactor.search(s)
+            interactor!!.search(s)
         }
     }
 }
